@@ -85,3 +85,4 @@
 [2026-05-05T09:51:04.602Z] Commit #25: refactor: move constants to configuration modules folder
 [2026-05-05T10:02:16.333Z] Commit #26: test: add validation check logic to risk models evaluation pipeline
 [2026-05-05T13:49:39.093Z] Commit #27: style: define core design system tokens in css
+[2026-05-05T20:51:40.607Z] Commit #28: style: clean up responsive flex classes on sidebar layout
