@@ -182,3 +182,4 @@
 [2026-05-21T08:14:43.891Z] Commit #122: style: polish margin gap variables in pr inbox layout panels
 [2026-05-21T14:55:02.466Z] Commit #123: fix: fix missing react keys inside suggested prompts cards
 [2026-05-21T20:32:27.407Z] Commit #124: docs: update backend API models architecture overview schema
+[2026-05-21T22:30:34.270Z] Commit #125: script: add training datasets download pipeline
