@@ -274,3 +274,4 @@
 [2026-06-05T19:53:46.517Z] Commit #214: design: swap legacy sidebar with new IconRail in shell
 [2026-06-05T18:21:52.499Z] Commit #215: perf: minimize loading bundle size of framer-motion elements
 [2026-06-05T22:40:34.852Z] Commit #216: style: align text spacing labels inside repositories cards list
+[2026-06-06T03:21:53.659Z] Commit #217: fix: handle null exception parsing on Whisper meetings transcripts
