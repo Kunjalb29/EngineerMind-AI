@@ -1,225 +1,185 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Folder, 
-  GitPullRequest, 
-  AlertTriangle, 
-  CheckCircle2, 
-  Clock, 
+  GitBranch, 
   Users, 
-  ChevronRight, 
-  Plus, 
-  Search,
-  BookOpen
+  Activity, 
+  GitPullRequest, 
+  CheckCircle2, 
+  AlertTriangle,
+  Clock,
+  Layers,
+  ChevronRight
 } from "lucide-react";
-import Link from "next/link";
 
-const REPO_STORIES = [
-  {
-    id: "repo-1",
-    name: "api-gateway",
-    lang: "TypeScript",
-    status: "warning",
-    statusText: "1 security alert pending",
-    description: "High-performance API gateway with rate limiting, auth, and intelligent proxy routing.",
-    changes: "Alice Chen migrated token verification to RS256 to address credentials caching. Bob Kumar fixed route rewrite limits.",
-    attention: "PR #247 (RAG integration) contains 1 plain-text API key log in console output.",
-    contributors: ["AC", "BK", "SW", "DK"],
-    activity: "Active",
-    lastCommit: "2h ago",
-  },
-  {
-    id: "repo-2",
-    name: "ml-pipeline",
-    lang: "Python",
-    status: "stable",
-    statusText: "All pipelines passing",
-    description: "End-to-end ML training and inference pipeline containing CodeBERT embeddings & XGBoost.",
-    changes: "Trained code classification matrix on 5GB security CVE data. Achieved F1 score > 0.88.",
-    attention: "No critical blockers. 2 warning flags about unused python dependencies in requirements.",
-    contributors: ["AC", "SW", "DK"],
-    activity: "Idle",
-    lastCommit: "5h ago",
-  },
-  {
-    id: "repo-3",
-    name: "frontend-app",
-    lang: "TypeScript",
-    status: "stable",
-    statusText: "Vercel deploy green",
-    description: "Next.js 16 frontend workspace designed with Aurora Forge blue palette.",
-    changes: "Redesigned layout components. Deleted legacy widescreen topbars. Cleaned grid configurations.",
-    attention: "3 branches are currently stale (more than 14 days without commits).",
-    contributors: ["BK", "AC", "DK", "SM"],
-    activity: "High Activity",
-    lastCommit: "1h ago",
-  },
-  {
-    id: "repo-4",
-    name: "auth-service",
-    lang: "Go",
-    status: "stable",
-    statusText: "Audit passing",
-    description: "High-throughput token issuer and authorization microservice using Redis backplane.",
-    changes: "Integrated OAuth client state callbacks. Optimized token verification latency by 4.2ms.",
-    attention: "Requires standard patch update for base golang docker image.",
-    contributors: ["AC", "BK"],
-    activity: "Stable",
-    lastCommit: "1d ago",
-  },
-  {
-    id: "repo-5",
-    name: "data-processor",
-    lang: "Python",
-    status: "critical",
-    statusText: "3 pipeline failures",
-    description: "Async worker consuming Kafka topics to persist structured codebase summaries.",
-    changes: "Bob restructured DB schemas for batch upserts. Memory pool limits configured.",
-    attention: "Async processing fails intermittently during high-throughput Kafka peaks.",
-    contributors: ["SW", "BK"],
-    activity: "Failing",
-    lastCommit: "3d ago",
-  }
+const TABS = ["Overview", "Activity", "Pull Requests", "Architecture", "Contributors"];
+
+const MOCK_REPOS = [
+  { id: "api-gateway", name: "api-gateway", lang: "TypeScript" },
+  { id: "ml-pipeline", name: "ml-pipeline", lang: "Python" }
 ];
 
 export default function RepositoriesPage() {
-  const [search, setSearch] = useState("");
-
-  const filtered = REPO_STORIES.filter(repo => 
-    repo.name.toLowerCase().includes(search.toLowerCase()) || 
-    repo.lang.toLowerCase().includes(search.toLowerCase())
-  );
+  const [activeRepo, setActiveRepo] = useState("api-gateway");
+  const [activeTab, setActiveTab] = useState("Overview");
 
   return (
-    <div className="flex flex-col h-full bg-[#0B0F14] overflow-hidden">
-      {/* Page Header */}
-      <header className="h-14 border-b border-[rgba(255,255,255,0.06)] px-6 flex items-center justify-between bg-[#121826]/40 backdrop-blur-md flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <Folder className="w-4 h-4 text-blue" />
-          <span className="text-sm font-semibold text-slate-200">Repository Stories</span>
-        </div>
+    <div className="w-full h-full flex flex-col bg-[#0B1220] overflow-hidden">
+      
+      {/* Top Header Selector */}
+      <header className="h-14 border-b border-[rgba(255,255,255,0.08)] bg-[#111827]/40 px-6 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.06)] bg-[#121826] text-xs">
-            <Search className="w-3.5 h-3.5 text-slate-500" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search repositories..."
-              className="bg-transparent text-xs text-slate-200 placeholder-slate-500 outline-none w-40"
-            />
+          <Folder className="w-4.5 h-4.5 text-[#2563EB]" />
+          <div className="flex gap-2">
+            {MOCK_REPOS.map(repo => (
+              <button
+                key={repo.id}
+                onClick={() => setActiveRepo(repo.id)}
+                className={`px-3 py-1 rounded text-xs font-semibold border transition-all cursor-pointer ${
+                  activeRepo === repo.id 
+                    ? "border-[#2563EB] bg-[#2563EB]/10 text-white" 
+                    : "border-[rgba(255,255,255,0.08)] bg-transparent text-[#94A3B8] hover:text-white"
+                }`}
+              >
+                {repo.name}
+              </button>
+            ))}
           </div>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 bg-blue hover:bg-blue-hover text-white text-xs font-semibold rounded-lg transition-colors">
-            <Plus className="w-3.5 h-3.5" />
-            Connect Repo
-          </button>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-6 space-y-6">
-        <div>
-          <h2 className="text-xl font-bold text-white mb-1">Codebase Health & Stories</h2>
-          <p className="text-xs text-slate-400">Continuous context extraction. Telling you what changed, who is working, and what needs immediate attention.</p>
-        </div>
-
-        {/* Stories List */}
-        <div className="space-y-4">
-          {filtered.map((repo, i) => (
-            <motion.div
-              key={repo.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: i * 0.05 }}
-              className="p-5 bg-[#121826] border border-[rgba(255,255,255,0.05)] rounded-xl hover:border-blue/35 transition-all duration-200 group"
+      {/* GitHub-inspired Navigation Tabs */}
+      <div className="px-6 border-b border-[rgba(255,255,255,0.08)] bg-[#111827]/30 flex-shrink-0">
+        <div className="flex gap-4">
+          {TABS.map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer relative ${
+                activeTab === tab 
+                  ? "border-[#2563EB] text-white" 
+                  : "border-transparent text-[#94A3B8] hover:text-white"
+              }`}
             >
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                
-                {/* 1. Meta Column (Colspan 3) */}
-                <div className="lg:col-span-3 space-y-2.5">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-slate-800 border border-[rgba(255,255,255,0.06)] flex items-center justify-center">
-                      <Folder className="w-4 h-4 text-blue" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-200 group-hover:text-blue transition-colors">
-                        {repo.name}
-                      </h3>
-                      <span className="text-[10px] text-slate-500 font-mono">{repo.lang}</span>
-                    </div>
-                  </div>
-                  
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    {repo.description}
-                  </p>
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
 
-                  <div className="flex items-center gap-2 pt-1">
-                    <span className={`w-2 h-2 rounded-full ${
-                      repo.status === "stable" ? "bg-emerald-500" :
-                      repo.status === "warning" ? "bg-amber-500 animate-pulse" :
-                      "bg-rose-500 animate-ping"
-                    }`} />
-                    <span className="text-[10px] text-slate-400 font-mono">{repo.statusText}</span>
-                  </div>
-                </div>
-
-                {/* 2. Changes Column (Colspan 4) */}
-                <div className="lg:col-span-4 space-y-1 bg-[#0b0f14]/50 p-4.5 rounded-lg border border-[rgba(255,255,255,0.03)]">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                    Recent Changes
-                  </span>
-                  <p className="text-xs text-slate-300 leading-relaxed font-sans">
-                    {repo.changes}
-                  </p>
-                  <div className="flex items-center gap-1 text-[9px] text-slate-500 font-mono pt-2">
-                    <Clock className="w-3 h-3 text-slate-600" />
-                    Last update {repo.lastCommit}
-                  </div>
-                </div>
-
-                {/* 3. Attention Column (Colspan 3) */}
-                <div className="lg:col-span-3 space-y-1 bg-[#0b0f14]/50 p-4.5 rounded-lg border border-[rgba(255,255,255,0.03)]">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                    Needs Attention
-                  </span>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    {repo.attention}
-                  </p>
-                </div>
-
-                {/* 4. Action & Contributors Column (Colspan 2) */}
-                <div className="lg:col-span-2 flex flex-col justify-between h-full space-y-4 lg:text-right lg:items-end">
+      {/* Content panel */}
+      <div className="flex-1 overflow-y-auto p-6 md:p-8">
+        <div className="max-w-4xl mx-auto space-y-8">
+          
+          <AnimatePresence mode="wait">
+            {activeTab === "Overview" && (
+              <motion.div
+                key="Overview"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                className="space-y-6"
+              >
+                {/* Health Warning Header Banner */}
+                <div className="p-5 bg-[#111827] border border-[rgba(255,255,255,0.08)] rounded-xl flex items-center justify-between shadow-md">
                   <div className="space-y-1">
-                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
-                      Contributors
+                    <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider block">Repository Health</span>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B] animate-pulse" />
+                      <span className="text-sm font-bold text-slate-100">Healthy · 2 Issues Need Attention</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="px-2.5 py-1 bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20 text-[10px] font-mono rounded font-bold">
+                      Warning Flagged
                     </span>
-                    <div className="flex -space-x-1.5 justify-start lg:justify-end">
-                      {repo.contributors.map((c, idx) => (
-                        <div 
-                          key={idx} 
-                          className="w-6 h-6 rounded-full bg-slate-800 border border-[rgba(255,255,255,0.06)] flex items-center justify-center text-[9px] font-bold text-slate-300 font-mono"
-                        >
-                          {c}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Recent Changes summary */}
+                  <div className="p-5 bg-[#111827] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-4">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Recent Changes</h3>
+                    <div className="space-y-3.5 text-xs text-[#94A3B8] leading-relaxed">
+                      <div className="space-y-1">
+                        <span className="font-bold text-slate-200 block">Migrated verify verification to RS256</span>
+                        <p>Alice Chen cleaned up legacy HS256 auth symmetric signatures after credential exposure vulnerability checks.</p>
+                      </div>
+                      <div className="space-y-1 border-t border-[rgba(255,255,255,0.04)] pt-3">
+                        <span className="font-bold text-slate-200 block">Configured rate limiting Redis pools</span>
+                        <p>Bob Kumar added sliding window proxy middlewares inFastify to regulate client route queries.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Active Contributors */}
+                  <div className="p-5 bg-[#111827] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-4">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Contributors</h3>
+                    <div className="space-y-3">
+                      {[
+                        { name: "Alice Chen", role: "Auth Refactor Lead", commits: "18 commits" },
+                        { name: "Bob Kumar", role: "Routing Middleware Proxy", commits: "12 commits" },
+                        { name: "Sarah Williams", role: "Integration Tests suite", commits: "5 commits" }
+                      ].map(person => (
+                        <div key={person.name} className="flex items-center justify-between text-xs bg-[#0B1220]/40 p-2.5 rounded border border-[rgba(255,255,255,0.03)]">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-[#2563EB]/20 text-[#2563EB] flex items-center justify-center font-bold text-[10px] font-mono">
+                              {person.name.charAt(0)}
+                            </div>
+                            <div>
+                              <span className="font-bold text-slate-200 block">{person.name}</span>
+                              <span className="text-[9px] text-slate-500 block">{person.role}</span>
+                            </div>
+                          </div>
+                          <span className="text-[10px] text-[#94A3B8] font-mono">{person.commits}</span>
                         </div>
                       ))}
                     </div>
                   </div>
-
-                  <Link
-                    href="/dashboard"
-                    className="inline-flex items-center gap-1 text-xs text-blue hover:text-blue-hover font-semibold transition-colors mt-auto"
-                  >
-                    <span>Ask AI</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </Link>
                 </div>
 
-              </div>
-            </motion.div>
-          ))}
+                {/* Commit Timeline Feed */}
+                <div className="p-5 bg-[#111827] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-4">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Commit Timeline</h3>
+                  <div className="relative border-l border-[rgba(255,255,255,0.06)] pl-4 ml-2 space-y-4">
+                    {[
+                      { msg: "fix: resolve credentials mask logger output crash", date: "2h ago", author: "alice-chen" },
+                      { msg: "feat: add local redis cert cache fallback verify route", date: "5h ago", author: "alice-chen" },
+                      { msg: "refactor: clean up Fastify router plugin imports", date: "1d ago", author: "bob-kumar" }
+                    ].map((c, i) => (
+                      <div key={i} className="text-xs text-[#94A3B8] relative">
+                        <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 bg-[#111827] border border-[#2563EB] rounded-full flex items-center justify-center">
+                          <div className="w-1 h-1 bg-[#2563EB] rounded-full" />
+                        </div>
+                        <span className="font-mono text-slate-300 font-bold block">{c.msg}</span>
+                        <span className="text-[10px] text-slate-500">{c.author} • {c.date}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </motion.div>
+            )}
+
+            {/* Other static tabs */}
+            {activeTab !== "Overview" && (
+              <motion.div
+                key="other"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="p-8 text-center text-xs text-[#94A3B8] font-mono"
+              >
+                No active details configured for {activeTab}. Check Overview for health status.
+              </motion.div>
+            )}
+          </AnimatePresence>
+
         </div>
-      </main>
+      </div>
+
     </div>
   );
 }

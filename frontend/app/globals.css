@@ -1,490 +1,68 @@
 @import "tailwindcss";
 
-/* ============================================================
-   ENGINEERMIND AI — Design System v2
-   Inspired by: Linear, Vercel, Cursor, Notion
-   ============================================================ */
+@theme {
+  --color-background: #0B1220;
+  --color-surface: #111827;
+  --color-primary: #2563EB;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-text-primary: #F8FAFC;
+  --color-text-secondary: #94A3B8;
+  --color-muted: #94A3B8;
+  --color-border: rgba(255, 255, 255, 0.08);
 
+  --font-sans: var(--font-inter), sans-serif;
+  --font-heading: var(--font-inter), sans-serif;
+}
+
+/* Base resets & custom helpers */
 :root {
-  /* ── Backgrounds ── */
-  --bg:           #0B0F14;
-  --surface:      #121826;
-  --elevated:     #1C2333;
-  --overlay:      #232D40;
-
-  /* ── Borders ── */
-  --border:       rgba(255, 255, 255, 0.07);
-  --border-strong: rgba(255, 255, 255, 0.12);
-
-  /* ── Accents ── */
-  --blue:         #2563EB;
-  --blue-light:   #3B82F6;
-  --blue-dim:     rgba(37, 99, 235, 0.12);
-  --blue-glow:    rgba(37, 99, 235, 0.25);
-
-  /* ── Semantic ── */
-  --success:      #10B981;
-  --success-dim:  rgba(16, 185, 129, 0.12);
-  --warning:      #F59E0B;
-  --warning-dim:  rgba(245, 158, 11, 0.12);
-  --danger:       #EF4444;
-  --danger-dim:   rgba(239, 68, 68, 0.12);
-
-  /* ── Text ── */
-  --text:         #F8FAFC;
-  --text-2:       #94A3B8;
-  --text-3:       #475569;
-  --text-4:       #2D3B52;
-
-  /* ── Typography ── */
-  --font:         'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
-
-  /* ── Motion ── */
-  --ease:         cubic-bezier(0.32, 0.72, 0, 1);
-  --ease-out:     cubic-bezier(0, 0, 0.2, 1);
-  --duration-1:   120ms;
-  --duration-2:   200ms;
-  --duration-3:   320ms;
-}
-
-/* ── Base Reset ── */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  scroll-behavior: smooth;
+  color-scheme: dark;
 }
 
 body {
-  font-family: var(--font);
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-  font-size: 14px;
+  background-color: #0B1220;
+  color: #F8FAFC;
+  font-family: var(--font-inter), sans-serif;
 }
 
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--elevated); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: var(--overlay); }
-
-/* ── Selection ── */
-::selection { background: var(--blue-dim); color: var(--text); }
-
-/* ── Focus ── */
-:focus-visible {
-  outline: 2px solid var(--blue);
-  outline-offset: 2px;
-  border-radius: 6px;
-}
-
-/* ============================================================
-   LAYOUT UTILITIES
-   ============================================================ */
-
-.h-screen-app { height: 100dvh; }
-
-/* ============================================================
-   SURFACE COMPONENTS
-   ============================================================ */
-
-/* Card — nearly borderless, subtle background */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+/* Custom styles for clean, card-based flat UI design */
+.card-flat {
+  background-color: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
 }
 
-.card-elevated {
-  background: var(--elevated);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+.max-layout-width {
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* Interactive card with hover lift */
-.card-interactive {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  transition: border-color var(--duration-2) var(--ease-out),
-              background var(--duration-2) var(--ease-out),
-              transform var(--duration-2) var(--ease-out);
-  cursor: pointer;
-}
-.card-interactive:hover {
-  border-color: var(--border-strong);
-  background: var(--elevated);
-  transform: translateY(-1px);
+.content-container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 32px;
+  padding-right: 32px;
 }
 
-/* Glass surface */
-.glass {
-  background: rgba(18, 24, 38, 0.72);
-  backdrop-filter: blur(16px) saturate(1.2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
-  border: 1px solid var(--border);
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-/* ============================================================
-   TYPOGRAPHY SCALE
-   ============================================================ */
-
-.t-display {
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
-  font-weight: 700;
-  line-height: 1.08;
-  letter-spacing: -0.04em;
-  color: var(--text);
+::-webkit-scrollbar-track {
+  background: #0B1220;
 }
 
-.t-hero {
-  font-size: clamp(1.75rem, 3vw, 3rem);
-  font-weight: 700;
-  line-height: 1.12;
-  letter-spacing: -0.03em;
-  color: var(--text);
+::-webkit-scrollbar-thumb {
+  background: #111827;
+  border-radius: 3px;
 }
 
-.t-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: -0.02em;
-  color: var(--text);
+::-webkit-scrollbar-thumb:hover {
+  background: #2563EB;
 }
-
-.t-heading {
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--text);
-}
-
-.t-body {
-  font-size: 0.9375rem;
-  font-weight: 400;
-  line-height: 1.65;
-  color: var(--text-2);
-}
-
-.t-caption {
-  font-size: 0.8125rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: var(--text-3);
-}
-
-.t-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-
-/* Gradient text */
-.text-gradient {
-  background: linear-gradient(135deg, var(--text) 0%, var(--text-2) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-gradient-blue {
-  background: linear-gradient(135deg, #60A5FA 0%, #2563EB 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ============================================================
-   BUTTON SYSTEM
-   ============================================================ */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-family: var(--font);
-  font-size: 0.875rem;
-  font-weight: 500;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all var(--duration-2) var(--ease-out);
-  white-space: nowrap;
-  text-decoration: none;
-  padding: 0 14px;
-  height: 36px;
-}
-
-.btn-primary {
-  background: var(--blue);
-  color: #fff;
-}
-.btn-primary:hover { background: var(--blue-light); }
-
-.btn-secondary {
-  background: var(--elevated);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-.btn-secondary:hover { background: var(--overlay); border-color: var(--border-strong); }
-
-.btn-ghost {
-  background: transparent;
-  color: var(--text-2);
-  border: 1px solid transparent;
-}
-.btn-ghost:hover { background: var(--elevated); color: var(--text); }
-
-.btn-sm {
-  height: 28px;
-  padding: 0 10px;
-  font-size: 0.8125rem;
-  border-radius: 6px;
-}
-
-.btn-lg {
-  height: 44px;
-  padding: 0 20px;
-  font-size: 0.9375rem;
-  border-radius: 10px;
-}
-
-.btn-xl {
-  height: 52px;
-  padding: 0 28px;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 12px;
-}
-
-/* ============================================================
-   BADGE / PILL SYSTEM
-   ============================================================ */
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 2px 8px;
-  border-radius: 99px;
-  border: 1px solid transparent;
-}
-
-.badge-blue    { background: var(--blue-dim);     color: var(--blue-light); border-color: rgba(59,130,246,0.2); }
-.badge-success { background: var(--success-dim);  color: var(--success);    border-color: rgba(16,185,129,0.2); }
-.badge-warning { background: var(--warning-dim);  color: var(--warning);    border-color: rgba(245,158,11,0.2); }
-.badge-danger  { background: var(--danger-dim);   color: var(--danger);     border-color: rgba(239,68,68,0.2); }
-.badge-muted   { background: var(--elevated);     color: var(--text-3);     border-color: var(--border); }
-
-/* ============================================================
-   INPUT SYSTEM
-   ============================================================ */
-
-.input {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  font-family: var(--font);
-  font-size: 0.9375rem;
-  padding: 0 14px;
-  height: 40px;
-  width: 100%;
-  outline: none;
-  transition: border-color var(--duration-1) var(--ease-out),
-              box-shadow var(--duration-1) var(--ease-out);
-}
-.input::placeholder { color: var(--text-3); }
-.input:focus {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px var(--blue-dim);
-}
-
-/* Large AI input */
-.input-ai {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  color: var(--text);
-  font-family: var(--font);
-  font-size: 1rem;
-  padding: 18px 20px;
-  width: 100%;
-  resize: none;
-  outline: none;
-  transition: border-color var(--duration-2) var(--ease-out),
-              box-shadow var(--duration-2) var(--ease-out);
-  min-height: 60px;
-  line-height: 1.6;
-}
-.input-ai::placeholder { color: var(--text-3); }
-.input-ai:focus {
-  border-color: rgba(37,99,235,0.5);
-  box-shadow: 0 0 0 4px var(--blue-dim);
-}
-
-/* ============================================================
-   SKELETON LOADER
-   ============================================================ */
-
-.skeleton {
-  background: linear-gradient(90deg,
-    var(--elevated) 25%,
-    var(--overlay) 50%,
-    var(--elevated) 75%
-  );
-  background-size: 300% 100%;
-  animation: skeleton-wave 1.8s ease-in-out infinite;
-  border-radius: 6px;
-}
-@keyframes skeleton-wave {
-  0%   { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
-}
-
-/* ============================================================
-   STATUS DOTS
-   ============================================================ */
-
-.dot-live {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--success);
-  box-shadow: 0 0 0 2px var(--success-dim);
-  animation: pulse-dot 2s ease-in-out infinite;
-}
-@keyframes pulse-dot {
-  0%, 100% { box-shadow: 0 0 0 2px var(--success-dim); }
-  50%       { box-shadow: 0 0 0 4px var(--success-dim); }
-}
-
-/* ============================================================
-   DIVIDERS
-   ============================================================ */
-
-.divider { height: 1px; background: var(--border); }
-
-/* ============================================================
-   SPECIAL EFFECTS
-   ============================================================ */
-
-/* Grid pattern for landing */
-.grid-pattern {
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 64px 64px;
-}
-
-/* Dot pattern */
-.dot-pattern {
-  background-image: radial-gradient(var(--border-strong) 1px, transparent 1px);
-  background-size: 28px 28px;
-}
-
-/* Gradient fade masks */
-.fade-up {
-  mask-image: linear-gradient(to top, black 0%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to top, black 0%, transparent 100%);
-}
-.fade-bottom {
-  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-}
-
-/* Blue glow orb */
-.orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-}
-
-/* Code block */
-.code-block {
-  background: #0D1117;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.7;
-  padding: 20px 24px;
-  color: #e6edf3;
-}
-
-/* ============================================================
-   PROSE (for AI markdown responses)
-   ============================================================ */
-
-.prose-ai {
-  color: var(--text-2);
-  font-size: 0.9375rem;
-  line-height: 1.7;
-}
-.prose-ai h1, .prose-ai h2, .prose-ai h3 {
-  color: var(--text);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  margin: 1.25em 0 0.5em;
-}
-.prose-ai h1 { font-size: 1.375rem; }
-.prose-ai h2 { font-size: 1.125rem; }
-.prose-ai h3 { font-size: 1rem; }
-.prose-ai p  { margin: 0.75em 0; }
-.prose-ai ul, .prose-ai ol { padding-left: 1.5em; margin: 0.75em 0; }
-.prose-ai li { margin: 0.25em 0; }
-.prose-ai strong { color: var(--text); font-weight: 600; }
-.prose-ai code {
-  background: var(--elevated);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 1px 6px;
-  font-family: var(--font-mono);
-  font-size: 0.875em;
-  color: var(--blue-light);
-}
-.prose-ai pre {
-  background: #0D1117;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px 20px;
-  overflow-x: auto;
-  margin: 1em 0;
-}
-.prose-ai pre code {
-  background: none;
-  border: none;
-  padding: 0;
-  color: #e6edf3;
-  font-size: 13px;
-}
-.prose-ai blockquote {
-  border-left: 3px solid var(--blue);
-  padding-left: 1em;
-  color: var(--text-3);
-  font-style: italic;
-  margin: 1em 0;
-}
-
-/* ============================================================
-   UTILITY
-   ============================================================ */
-
-.mono { font-family: var(--font-mono); }
-.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }

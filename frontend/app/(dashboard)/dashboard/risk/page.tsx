@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   AlertTriangle, 
   ChevronRight, 
@@ -9,146 +10,293 @@ import {
   Users, 
   Clock, 
   Layers,
-  Cpu
+  Cpu,
+  Check,
+  Zap,
+  Info,
+  X
 } from "lucide-react";
-import Link from "next/link";
 
-interface Recommendation {
-  action: string;
-  impact: string;
+interface RiskItem {
   id: string;
+  title: string;
+  category: "Codebase" | "Team Load" | "Infrastructure" | "Security";
+  priority: "critical" | "high" | "medium" | "low";
+  description: string;
+  impact: string;
+  mitigation: string;
+  actionText: string;
 }
 
-const ACTIONABLE_RECOMMENDATIONS: Recommendation[] = [
-  { id: "rec-1", action: "Reassign tickets ENG-234 & ENG-235 from Alice Chen to Bob Kumar", impact: "Reduces RAG pipeline timeline block likelihood by 34%" },
-  { id: "rec-2", action: "Unblock Sandbox integration endpoint credentials", impact: "Resolves api-gateway external connection delay" },
-  { id: "rec-3", action: "Clean up symmetric HS256 legacy verification middleware", impact: "Reduces auth-service technical debt score by 15pts" }
+const MOCK_RISKS: RiskItem[] = [
+  {
+    id: "risk-1",
+    title: "Auth Integration Pipeline Deadlock Risk",
+    category: "Codebase",
+    priority: "critical",
+    description: "Parallel thread pool execution blocks Auth microservice gateway because of database connection count constraints. Connection timeouts exceed 15s under high concurrency loads.",
+    impact: "Auth service failure under production workload. Predicted 3-day delivery delay.",
+    mitigation: "Adopt async database pool timeouts and configure strangler gateway to scale connection limits.",
+    actionText: "Fix Connection Pool"
+  },
+  {
+    id: "risk-2",
+    title: "Developer Workload Queue Overload (Alice Chen)",
+    category: "Team Load",
+    priority: "high",
+    description: "Alice has 8 open blocker items. Critical path integration tasks for Qdrant RAG core are queue-blocked. Sprint target likelihood drops to 14% if unmitigated.",
+    impact: "Sprint 24 delay. RAG vector indexing pipeline release targets will be missed.",
+    mitigation: "Reassign tickets ENG-234 & ENG-235 from Alice Chen to Bob Kumar who has low load.",
+    actionText: "Rebalance Workload"
+  },
+  {
+    id: "risk-3",
+    title: "Unblocked Sandbox Webhook Race Condition",
+    category: "Infrastructure",
+    priority: "medium",
+    description: "Duplicate webhook events trigger concurrent transactions in the database, potentially leading to race conditions in client billing sandbox environments.",
+    impact: "Billing inconsistencies and sandbox database locks during load testing.",
+    mitigation: "Implement redis-based transactional lock flag with a 5-second TTL on incoming webhook request IDs.",
+    actionText: "Apply Redis Lock Patch"
+  },
+  {
+    id: "risk-4",
+    title: "Technical Debt Accumulation (Legacy HS256)",
+    category: "Security",
+    priority: "low",
+    description: "Legacy HS256 auth routes are still active in gateway and represent security technical debt that should be clean-deprecated post-RS256 migration.",
+    impact: "Security compliance auditing will report secondary authentication pathways as warning alerts.",
+    mitigation: "Clean up HS256 legacy verification middleware files and remove unused key configurations.",
+    actionText: "Schedule Deprecation"
+  }
 ];
 
 export default function RiskPage() {
+  const [risks, setRisks] = useState<RiskItem[]>(MOCK_RISKS);
+  const [activeTab, setActiveTab] = useState<"all" | "critical-high" | "medium-low">("all");
+  const [mitigatingId, setMitigatingId] = useState<string | null>(null);
+  const [mitigatedIds, setMitigatedIds] = useState<string[]>([]);
+
+  const handleMitigate = (id: string) => {
+    setMitigatingId(id);
+  };
+
+  const confirmMitigation = (id: string) => {
+    setMitigatedIds(prev => [...prev, id]);
+    setMitigatingId(null);
+  };
+
+  const filteredRisks = risks.filter(risk => {
+    if (activeTab === "critical-high") {
+      return risk.priority === "critical" || risk.priority === "high";
+    }
+    if (activeTab === "medium-low") {
+      return risk.priority === "medium" || risk.priority === "low";
+    }
+    return true;
+  });
+
+  const selectedMitigationRisk = risks.find(r => r.id === mitigatingId);
+
   return (
-    <div className="flex-1 flex flex-col bg-[#0B0F14] overflow-hidden">
-      
-      {/* Page Header */}
-      <header className="h-14 border-b border-[rgba(255,255,255,0.06)] px-6 flex items-center justify-between bg-[#121826]/40 backdrop-blur-md flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-blue" />
-          <span className="text-sm font-semibold text-slate-200">Risk Signals</span>
-        </div>
-        <div className="flex items-center gap-1.5 text-xs text-slate-400 font-mono bg-slate-800/40 px-2.5 py-1 rounded-md border border-[rgba(255,255,255,0.04)]">
-          <Cpu className="w-3.5 h-3.5 text-slate-500" />
-          Model: XGBoost v2.1 (91% ROC-AUC)
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 max-w-4xl">
-        <div>
-          <h2 className="text-xl font-bold text-white mb-1">Sprint Risk Assessment</h2>
-          <p className="text-xs text-slate-400">Continuous queue density audit. Real-time predictions of sprint delays and delivery failures.</p>
-        </div>
-
-        {/* 1. Large Top Hero Signal */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-6 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-4"
-        >
-          <div className="flex items-center gap-2 text-amber-500 font-bold text-sm">
-            <AlertTriangle className="w-5 h-5" />
-            <span>⚠ Moderate Risk — Sprint 24 Delivery</span>
+    <div className="w-full h-full bg-[#0B1220] text-[#F8FAFC] overflow-y-auto min-h-screen">
+      <div className="content-container py-10 space-y-8">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[rgba(255,255,255,0.06)] pb-6">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
+              <AlertTriangle className="w-6 h-6 text-[#2563EB]" />
+              Risk Prediction Engine
+            </h1>
+            <p className="text-sm text-[#94A3B8] mt-1">
+              Machine learning models evaluating queue density, technical debt accumulation, and developer overload alerts.
+            </p>
           </div>
+          <div className="flex items-center gap-1.5 text-xs text-[#94A3B8] font-mono bg-[#111827] px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.08)]">
+            <Cpu className="w-3.5 h-3.5 text-[#2563EB]" />
+            Model: XGBoost v2.1 (91% ROC-AUC)
+          </div>
+        </div>
 
-          <p className="text-sm text-slate-300 leading-relaxed font-medium">
-            Alice Chen currently has 8 pending backlog items. If the Qdrant RAG pipeline integration is not unblocked by Monday afternoon, the team will likely miss the Sprint 24 launch goal.
-          </p>
+        {/* Tab Filters */}
+        <div className="flex border-b border-[rgba(255,255,255,0.06)] gap-6">
+          <button
+            onClick={() => setActiveTab("all")}
+            className={`pb-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === "all"
+                ? "border-[#2563EB] text-[#F8FAFC]"
+                : "border-transparent text-[#94A3B8] hover:text-slate-300"
+            }`}
+          >
+            All Risk Alerts ({risks.filter(r => !mitigatedIds.includes(r.id)).length})
+          </button>
+          <button
+            onClick={() => setActiveTab("critical-high")}
+            className={`pb-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === "critical-high"
+                ? "border-[#2563EB] text-[#F8FAFC]"
+                : "border-transparent text-[#94A3B8] hover:text-slate-300"
+            }`}
+          >
+            Critical & High ({risks.filter(r => (r.priority === "critical" || r.priority === "high") && !mitigatedIds.includes(r.id)).length})
+          </button>
+          <button
+            onClick={() => setActiveTab("medium-low")}
+            className={`pb-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === "medium-low"
+                ? "border-[#2563EB] text-[#F8FAFC]"
+                : "border-transparent text-[#94A3B8] hover:text-slate-300"
+            }`}
+          >
+            Medium & Low ({risks.filter(r => (r.priority === "medium" || r.priority === "low") && !mitigatedIds.includes(r.id)).length})
+          </button>
+        </div>
 
-          <div className="h-[1px] bg-[rgba(255,255,255,0.06)]" />
+        {/* Risks List Container */}
+        <div className="space-y-6">
+          {filteredRisks.map((risk) => {
+            const isMitigated = mitigatedIds.includes(risk.id);
+            return (
+              <motion.div
+                key={risk.id}
+                layout
+                className={`card-flat p-6 transition-all ${
+                  isMitigated ? "opacity-40 select-none border-dashed" : "hover:border-[#2563EB]/30"
+                }`}
+              >
+                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                  <div className="space-y-3 flex-1">
+                    {/* Badge Row */}
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase font-mono ${
+                        risk.priority === "critical" ? "bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/20" :
+                        risk.priority === "high" ? "bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20" :
+                        risk.priority === "medium" ? "bg-[#2563EB]/10 text-[#3B82F6] border border-[#2563EB]/20" :
+                        "bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20"
+                      }`}>
+                        {risk.priority}
+                      </span>
+                      <span className="text-[10px] text-[#94A3B8]/60 font-mono">Category: {risk.category}</span>
+                      {isMitigated && (
+                        <span className="flex items-center gap-1 text-[9px] text-[#10B981] font-bold font-mono ml-2">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Mitigated
+                        </span>
+                      )}
+                    </div>
 
-          {/* Recommended Actions inside Hero */}
-          <div className="space-y-2.5">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Recommended Actions:</span>
-            <div className="space-y-1.5">
-              {ACTIONABLE_RECOMMENDATIONS.map(rec => (
-                <div key={rec.id} className="flex items-start gap-2 text-xs text-slate-300">
-                  <ArrowRight className="w-4 h-4 text-blue flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-semibold text-slate-200">{rec.action}</span>
-                    <span className="text-[10px] text-slate-500 block">{rec.impact}</span>
+                    {/* Title */}
+                    <h3 className="text-sm font-bold text-slate-100">{risk.title}</h3>
+
+                    {/* Description */}
+                    <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
+                      {risk.description}
+                    </p>
+
+                    {/* Detail bullets */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 text-[11px] text-[#94A3B8]">
+                      <div className="flex items-start gap-1.5">
+                        <Info className="w-3.5 h-3.5 text-[#2563EB] flex-shrink-0 mt-0.5" />
+                        <div>
+                          <span className="font-bold text-slate-200">Predicted Impact:</span> {risk.impact}
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-[#10B981] flex-shrink-0 mt-0.5" />
+                        <div>
+                          <span className="font-bold text-slate-200">Suggested Action:</span> {risk.mitigation}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Fix Button */}
+                  <div className="flex-shrink-0 self-end md:self-start">
+                    {!isMitigated ? (
+                      <button
+                        onClick={() => handleMitigate(risk.id)}
+                        className={`px-4 py-2 bg-[#111827] hover:bg-[#2563EB] text-[#F8FAFC] border border-[rgba(255,255,255,0.08)] hover:border-[#2563EB] rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-[0_0_12px_rgba(37,99,235,0.02)]`}
+                      >
+                        <Zap className="w-3.5 h-3.5" />
+                        <span>{risk.actionText}</span>
+                      </button>
+                    ) : (
+                      <div className="text-xs text-[#94A3B8] font-mono px-3 py-1.5 bg-[#0B1220] rounded border border-[rgba(255,255,255,0.04)]">
+                        Resolved
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* 2. Breakdown Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
-          {/* Queue Density & Bottleneck Block */}
-          <div className="p-5 bg-[#121826] border border-[rgba(255,255,255,0.05)] rounded-xl space-y-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-blue" />
-              Queue Bottleneck Audit
-            </h3>
-            <div className="space-y-3">
-              <div className="p-3 bg-[#0b0f14]/50 border border-[rgba(255,255,255,0.03)] rounded-lg flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-bold text-slate-200">Alice Chen</div>
-                  <span className="text-[10px] text-slate-500">Domain: ML / Python</span>
-                </div>
-                <span className="px-2 py-0.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded text-[9px] font-bold font-mono">
-                  8 Tasks (Heavy Load)
-                </span>
-              </div>
-              <div className="p-3 bg-[#0b0f14]/50 border border-[rgba(255,255,255,0.03)] rounded-lg flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-bold text-slate-200">Bob Kumar</div>
-                  <span className="text-[10px] text-slate-500">Domain: Frontend / TS</span>
-                </div>
-                <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[9px] font-bold font-mono">
-                  1 Task (Idle)
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Technical Debt Warnings */}
-          <div className="p-5 bg-[#121826] border border-[rgba(255,255,255,0.05)] rounded-xl space-y-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-blue" />
-              Technical Debt Signal
-            </h3>
-            <div className="space-y-3">
-              <div className="flex justify-between text-xs items-center p-1 border-b border-[rgba(255,255,255,0.04)]">
-                <span className="text-slate-400">auth-service (Legacy verification)</span>
-                <span className="font-mono text-amber-500 font-bold">35% debt</span>
-              </div>
-              <div className="flex justify-between text-xs items-center p-1 border-b border-[rgba(255,255,255,0.04)]">
-                <span className="text-slate-400">api-gateway (Redis pools logic)</span>
-                <span className="font-mono text-emerald-400 font-bold">12% debt</span>
-              </div>
-              <div className="flex justify-between text-xs items-center p-1 border-b border-[rgba(255,255,255,0.04)]">
-                <span className="text-slate-400">ml-pipeline (SentenceTransformers evaluation)</span>
-                <span className="font-mono text-emerald-400 font-bold">28% debt</span>
-              </div>
-            </div>
-          </div>
-
+              </motion.div>
+            );
+          })}
         </div>
 
-        {/* 3. Actions Footer Panel */}
-        <div className="pt-4 border-t border-[rgba(255,255,255,0.06)] flex gap-3">
-          <Link
-            href="/dashboard"
-            className="flex-1 py-2.5 bg-blue hover:bg-blue-hover text-white text-xs font-bold rounded-xl transition-all duration-200 shadow-[0_0_15px_rgba(37,99,235,0.2)] text-center flex items-center justify-center gap-1.5"
-          >
-            <span>Mitigate via AI Copilot</span>
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
+        {/* Action Mitigation Drawer Overlay */}
+        <AnimatePresence>
+          {mitigatingId && selectedMitigationRisk && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-lg bg-[#111827] border border-[rgba(255,255,255,0.1)] rounded-xl shadow-2xl overflow-hidden flex flex-col"
+              >
+                {/* Header */}
+                <div className="p-5 border-b border-[rgba(255,255,255,0.08)] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-[#2563EB]" />
+                    <span className="text-xs font-bold text-slate-200 uppercase tracking-wider font-mono">Mitigation Plan</span>
+                  </div>
+                  <button
+                    onClick={() => setMitigatingId(null)}
+                    className="p-1 hover:bg-[#0B1220] rounded-md transition-colors"
+                  >
+                    <X className="w-4 h-4 text-[#94A3B8]" />
+                  </button>
+                </div>
 
-      </main>
+                {/* Plan Body */}
+                <div className="p-6 space-y-4">
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] text-[#94A3B8]/60 font-mono block">Active Risk Target</span>
+                    <h4 className="text-sm font-bold text-slate-100">{selectedMitigationRisk.title}</h4>
+                  </div>
+
+                  <div className="p-4 bg-[#0B1220] border border-[rgba(255,255,255,0.04)] rounded-lg space-y-2">
+                    <span className="text-[10px] text-[#2563EB] font-bold block font-mono">AI Recommended Execution:</span>
+                    <p className="text-xs text-slate-300 leading-relaxed font-semibold">
+                      {selectedMitigationRisk.mitigation}
+                    </p>
+                  </div>
+
+                  <p className="text-[11px] text-[#94A3B8] leading-relaxed">
+                    Executing this action will automatically generate pull requests, re-assign tickets in Jira databases, or push pipeline updates. Confirming maps this risk as resolved.
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="p-5 border-t border-[rgba(255,255,255,0.08)] bg-[#0B1220]/40 flex gap-3">
+                  <button
+                    onClick={() => confirmMitigation(selectedMitigationRisk.id)}
+                    className="flex-1 py-2 bg-[#2563EB] hover:bg-[#2563EB]/90 text-white text-xs font-bold rounded-lg transition-all shadow-[0_0_12px_rgba(37,99,235,0.2)]"
+                  >
+                    Apply Mitigation Now
+                  </button>
+                  <button
+                    onClick={() => setMitigatingId(null)}
+                    className="flex-1 py-2 bg-[#111827] border border-[rgba(255,255,255,0.08)] hover:border-slate-700 text-slate-300 text-xs font-bold rounded-lg transition-all"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+      </div>
     </div>
   );
 }
